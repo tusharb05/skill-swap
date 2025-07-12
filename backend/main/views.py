@@ -328,3 +328,12 @@ class UserSwapRequestsView(APIView):
 
         serializer = SwapRequestSerializer(swap_requests, many=True)
         return Response(serializer.data)
+    
+
+class AdminMessagesView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        messages = PlatformMessage.objects.all().order_by('-created_at')
+        serializer = PlatformMessageSerializer(messages, many=True)
+        return Response(serializer.data, status=200)
