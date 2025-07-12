@@ -123,3 +123,35 @@ class UserListSerializer(serializers.ModelSerializer):
 
     def get_wanted_skills(self, obj):
         return list(obj.userskill_set.filter(type="wanted").values_list("skill__name", flat=True))
+    
+
+
+class SkillSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Skill
+        fields = ['id', 'name']
+
+class SwapRequestSerializer(serializers.ModelSerializer):
+    requester_id = serializers.IntegerField(source='requester.id')
+    requester_name = serializers.CharField(source='requester.full_name')
+
+    receiver_id = serializers.IntegerField(source='receiver.id')
+    receiver_name = serializers.CharField(source='receiver.full_name')
+
+    offered_skills = serializers.SerializerMethodField()
+    wanted_skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SwapRequest
+        fields = [
+            'id', 'requester_id', 'requester_name',
+            'receiver_id', 'receiver_name',
+            'message', 'status', 'created_at',
+            'offered_skills', 'wanted_skills',
+        ]
+
+    def get_offered_skills(self, obj):
+        return list(obj.offered_skills.values_list('skill__name', flat=True))
+
+    def get_wanted_skills(self, obj):
+        return list(obj.wanted_skills.values_list('skill__name', flat=True))

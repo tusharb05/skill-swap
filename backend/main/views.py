@@ -313,3 +313,18 @@ class AllUsersListView(APIView):
         users = CustomUser.objects.filter(is_active=True, is_banned=False, is_public=True).select_related('rating_summary').prefetch_related('userskill_set__skill')
         serializer = UserListSerializer(users, many=True)
         return Response(serializer.data)
+    
+from .serializers import SwapRequestSerializer
+from django.db import models
+
+class UserSwapRequestsView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+        swap_requests = SwapRequest.objects.filter(
+            models.Q(requester=user) | models.Q(receiver=user)
+        ).prefetch_related('offered_skills__skill', 'wanted_skills__skill', 'requester', 'receiver')
+
+        serializer = SwapRequestSerializer(swap_requests, many=True)
+        return Response(serializer.data)
