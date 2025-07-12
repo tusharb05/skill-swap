@@ -276,4 +276,29 @@ class PlatformMessageView(APIView):
         serializer.save()
         return Response(serializer.data, status=201)
     
-    
+
+from .serializers import UserProfileSerializer
+
+class UserProfileView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user_id = request.data.get("user_id")
+        is_self_flag = request.data.get("is_self", False)
+
+        if is_self_flag:
+            target_user = request.user
+        else:
+            if not user_id:
+                return Response({"detail": "user_id is required if is_self is false."}, status=400)
+
+            try:
+                target_user = CustomUser.objects.get(id=user_id)
+            except CustomUser.DoesNotExist:
+                return Response({"detail": "User not found."}, status=404)
+
+            if target_user.is_banned:
+                return Response({"detail": "This user is banned."}, status=403)
+
+        serializer = UserProfileSerializer(target_user, context={"request_user": request.user})
+        return Response(serializer.data, status=200)
