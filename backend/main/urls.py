@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import UserProfileView, RegisterView, LoginView, UpdateSkillsView, CreateSwapRequestView, UpdateSwapRequestStatusView, SubmitFeedbackView, BanUserView, MonitorSwapRequestsView, PlatformMessageView
+from .views import AllUsersListView, UserProfileView, RegisterView, LoginView, UpdateSkillsView, CreateSwapRequestView, UpdateSwapRequestStatusView, SubmitFeedbackView, BanUserView, MonitorSwapRequestsView, PlatformMessageView
 
 urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
@@ -11,4 +11,5 @@ urlpatterns = [
     path('admin-post-message/', PlatformMessageView.as_view(), name='admin-post-message'),
     path('ban-user/', BanUserView.as_view(), name='ban-user'),
     path('user-profile/', UserProfileView.as_view(), name='user-profile'),
+    path('all-users/', AllUsersListView.as_view(), name='all-users'),
 ]

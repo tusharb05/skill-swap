@@ -302,3 +302,14 @@ class UserProfileView(APIView):
 
         serializer = UserProfileSerializer(target_user, context={"request_user": request.user})
         return Response(serializer.data, status=200)
+    
+
+from .serializers import UserListSerializer
+
+class AllUsersListView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        users = CustomUser.objects.filter(is_active=True, is_banned=False, is_public=True).select_related('rating_summary').prefetch_related('userskill_set__skill')
+        serializer = UserListSerializer(users, many=True)
+        return Response(serializer.data)

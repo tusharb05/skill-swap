@@ -104,3 +104,22 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_is_self(self, obj):
         request_user = self.context.get("request_user")
         return request_user.id == obj.id if request_user else False
+    
+
+class UserListSerializer(serializers.ModelSerializer):
+    average_rating = serializers.FloatField(source='rating_summary.average_rating', default=0.0)
+    total_reviews = serializers.IntegerField(source='rating_summary.total_reviews', default=0)
+
+    offered_skills = serializers.SerializerMethodField()
+    wanted_skills = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CustomUser
+        fields = ['id', 'full_name', 'email', 'location', 'availability', 'is_public', 'is_banned',
+                  'average_rating', 'total_reviews', 'offered_skills', 'wanted_skills']
+
+    def get_offered_skills(self, obj):
+        return list(obj.userskill_set.filter(type="offered").values_list("skill__name", flat=True))
+
+    def get_wanted_skills(self, obj):
+        return list(obj.userskill_set.filter(type="wanted").values_list("skill__name", flat=True))
