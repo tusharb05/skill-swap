@@ -80,19 +80,28 @@ class PlatformMessageSerializer(serializers.ModelSerializer):
 
 from .models import CustomUser
 
+class FeedbackDisplaySerializer(serializers.ModelSerializer):
+    reviewer_name = serializers.CharField(source='reviewer.full_name')
+
+    class Meta:
+        model = Feedback
+        fields = ['id', 'reviewer_name', 'rating', 'comment', 'created_at']
+
+
 class UserProfileSerializer(serializers.ModelSerializer):
     average_rating = serializers.FloatField(source='rating_summary.average_rating', read_only=True)
     total_reviews = serializers.IntegerField(source='rating_summary.total_reviews', read_only=True)
     offered_skills = serializers.SerializerMethodField()
     wanted_skills = serializers.SerializerMethodField()
     is_self = serializers.SerializerMethodField()
+    feedbacks = serializers.SerializerMethodField()
 
     class Meta:
         model = CustomUser
         fields = [
             'id', 'full_name', 'email', 'location', 'availability', 'is_public',
             'average_rating', 'total_reviews', 'offered_skills', 'wanted_skills',
-            'is_self'
+            'is_self', 'feedbacks'
         ]
 
     def get_offered_skills(self, obj):
@@ -104,6 +113,10 @@ class UserProfileSerializer(serializers.ModelSerializer):
     def get_is_self(self, obj):
         request_user = self.context.get("request_user")
         return request_user.id == obj.id if request_user else False
+
+    def get_feedbacks(self, obj):
+        feedbacks = Feedback.objects.filter(reviewee=obj).select_related('reviewer').order_by('-created_at')
+        return FeedbackDisplaySerializer(feedbacks, many=True).data
     
 
 class UserListSerializer(serializers.ModelSerializer):
